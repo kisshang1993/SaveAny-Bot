@@ -17,28 +17,20 @@ import (
 	"github.com/krau/SaveAny-Bot/common/utils/tgutil"
 	"github.com/krau/SaveAny-Bot/config"
 	"github.com/krau/SaveAny-Bot/database"
-	"github.com/ncruces/go-sqlite3/gormlite"
 )
 
 var uc *gotgproto.Client
 var ectx *ext.Context
 
 func GetCtx() *ext.Context {
-	if uc == nil {
-		panic("User client is not initialized, please call Login first")
-	}
 	if ectx != nil {
 		return ectx
 	}
+	if uc == nil {
+		return nil
+	}
 	ectx = uc.CreateContext()
 	return ectx
-}
-
-func GetClient() *gotgproto.Client {
-	if uc == nil {
-		panic("User client is not initialized, please call Login first")
-	}
-	return uc
 }
 
 func Login(ctx context.Context) (*gotgproto.Client, error) {
@@ -64,7 +56,7 @@ func Login(ctx context.Context) (*gotgproto.Client, error) {
 			config.C().Telegram.AppHash,
 			gotgproto.ClientTypePhone(""),
 			&gotgproto.ClientOpts{
-				Session:          sessionMaker.SqlSession(gormlite.Open(config.C().Telegram.Userbot.Session)),
+				Session:          sessionMaker.SqlSession(database.GetDialect(config.C().Telegram.Userbot.Session)),
 				AuthConversator:  &terminalAuthConversator{},
 				Context:          ctx,
 				DisableCopyright: true,
