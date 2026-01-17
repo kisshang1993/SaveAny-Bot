@@ -17,6 +17,8 @@ import (
 	"github.com/gotd/td/constant"
 	"github.com/gotd/td/tg"
 	"github.com/krau/SaveAny-Bot/common/cache"
+	"github.com/krau/SaveAny-Bot/common/i18n"
+	"github.com/krau/SaveAny-Bot/common/i18n/i18nk"
 	"github.com/krau/SaveAny-Bot/common/utils/strutil"
 	"github.com/rs/xid"
 )
@@ -96,7 +98,7 @@ func GenFileNameFromMessage(message tg.Message) string {
 
 func BuildCancelButton(taskID string) tg.KeyboardButtonClass {
 	return &tg.KeyboardButtonCallback{
-		Text: "取消任务",
+		Text: i18n.T(i18nk.BotMsgCommonCancelButtonText, nil),
 		Data: fmt.Appendf(nil, "cancel %s", taskID),
 	}
 }
@@ -111,29 +113,28 @@ func InputMessageClassSliceFromInt(ids []int) []tg.InputMessageClass {
 	return result
 }
 
-func GetMessagesRange(ctx *ext.Context, chatID int64, minId, maxId int) ([]*tg.Message, error) {
-	if msg, err := getMessagesRange(ctx, chatID, minId, maxId); err == nil {
-		return msg, nil
+func GetMessagesRange(ctx *ext.Context, chatID int64, minId, maxId int) (msg []*tg.Message, err error) {
+	if msg, err = getMessagesRange(ctx, chatID, minId, maxId); err == nil {
+		return
 	}
 	in := constant.TDLibPeerID(chatID)
 	plain := in.ToPlain()
-
 	var channel constant.TDLibPeerID
 	channel.Channel(plain)
-	if msg, err := getMessagesRange(ctx, int64(channel), minId, maxId); err == nil {
-		return msg, nil
+	if msg, err = getMessagesRange(ctx, int64(channel), minId, maxId); err == nil {
+		return
 	}
 	var userID constant.TDLibPeerID
 	userID.User(plain)
-	if msg, err := getMessagesRange(ctx, int64(userID), minId, maxId); err == nil {
-		return msg, nil
+	if msg, err = getMessagesRange(ctx, int64(userID), minId, maxId); err == nil {
+		return
 	}
 	var chat constant.TDLibPeerID
 	chat.Chat(plain)
-	if msg, err := getMessagesRange(ctx, int64(chat), minId, maxId); err == nil {
-		return msg, nil
+	if msg, err = getMessagesRange(ctx, int64(chat), minId, maxId); err == nil {
+		return
 	}
-	return nil, fmt.Errorf("failed to get messages range for chatID %d", chatID)
+	return nil, fmt.Errorf("failed to get messages range for chat %d: %w", chatID, err)
 }
 
 func getMessagesRange(ctx *ext.Context, chatID int64, minId, maxId int) ([]*tg.Message, error) {

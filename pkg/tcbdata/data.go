@@ -45,6 +45,10 @@ type Add struct {
 	ParsedItem *parser.Item
 	// directlinks
 	DirectLinks []string
+	// aria2
+	Aria2URIs []string
+	// ytdlp
+	YtdlpURLs []string
 }
 
 type SetDefaultStorage struct {
